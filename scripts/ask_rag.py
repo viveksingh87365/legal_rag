@@ -112,11 +112,11 @@ Give:
 
   data = response.json()
 
-print("\n==========================================================")
-print("AI LEGAL ANSWER by VIVEK KUMAR GEC AURANGABAD 2024-28(CSE)")
-print("==========================================================\n")
+  print("\n==========================================================")
+  print("AI LEGAL ANSWER by VIVEK KUMAR GEC AURANGABAD 2024-28(CSE)")
+  print("==========================================================\n")
 
-print(data["message"]["content"])
+  print(data["message"]["content"])
 
 
 # Run
