@@ -3,36 +3,32 @@ import chromadb
 from google import genai
 
 
-def ask_rag(question):
+def ask_rag(query):
     try:
-        # Load API key from Streamlit secrets
         api_key = st.secrets["GEMINI_API_KEY"]
 
-        # Gemini client
         client = genai.Client(api_key=api_key)
 
-        # Connect Chroma database
         db = chromadb.PersistentClient(path="./data/chroma")
         collection = db.get_collection("legal_docs")
 
-        # Search relevant chunks
         results = collection.query(
-            query_texts=[question],
+            query_texts=[query],
             n_results=3
         )
 
         context = "\n\n".join(results["documents"][0])
 
         prompt = f"""
-You are an Indian legal assistant.
+You are Kanun Saarthi GPT, an Indian legal assistant.
 
-Answer the question clearly using the legal context below.
+Answer the question using the legal context below.
 
 Context:
 {context}
 
 Question:
-{question}
+{query}
 """
 
         response = client.models.generate_content(
