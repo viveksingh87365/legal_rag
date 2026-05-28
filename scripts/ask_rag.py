@@ -89,7 +89,7 @@ Give:
 """
 
     # Ask AI
-response = requests.post(
+  response = requests.post(
 
         f"{OLLAMA_URL}/api/chat",
 
@@ -104,13 +104,13 @@ response = requests.post(
                     "content": prompt
                 }
 
-            ],
+             ],
 
             "stream": False
         }
-    )
+     )
 
-data = response.json()
+  data = response.json()
 
 print("\n==========================================================")
 print("AI LEGAL ANSWER by VIVEK KUMAR GEC AURANGABAD 2024-28(CSE)")
