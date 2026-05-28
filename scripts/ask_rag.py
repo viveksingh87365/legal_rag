@@ -77,23 +77,24 @@ Question:
 {query}
 """
 
-api_key = st.secrets["GEMINI_API_KEY"]
+def ask_gemini(prompt):
+    api_key = st.secrets["GEMINI_API_KEY"]
 
-url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
 
-payload = {
-    "contents": [
-        {
-            "parts": [
-                {"text": prompt}
-            ]
-        }
-    ]
-}
+    payload = {
+        "contents": [
+            {
+                "parts": [
+                    {"text": prompt}
+                ]
+            }
+        ]
+    }
 
-response = requests.post(url, json=payload)
-data = response.json()
+    response = requests.post(url, json=payload)
+    data = response.json()
 
-answer = data["candidates"][0]["content"]["parts"][0]["text"]
+    answer = data["candidates"][0]["content"]["parts"][0]["text"]
 
-return answer
+    return answer
