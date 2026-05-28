@@ -14,10 +14,8 @@ from contextlib import redirect_stdout
 
 # Import your script's main logic
 # Assumes scripts/ask_rag.py has a function or can be invoked
-try:
-    import scripts.ask_rag as ask_rag
-except ImportError:
-    st.error("Could not import 'scripts.ask_rag'. Ensure you run Streamlit from the root directory containing the 'scripts' folder.")
+import scripts.ask_rag as ask_rag
+
 
 def run_rag_and_parse(question: str):
     """
