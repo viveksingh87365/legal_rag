@@ -1,7 +1,12 @@
 import chromadb
+import os
 
-client = chromadb.PersistentClient(path="./data/croma")
-collection = client.get_collection("legal_docs")
+# IMPORTANT: safe persistent path
+DB_PATH = os.path.join(os.getcwd(), "data/croma")
+
+client = chromadb.PersistentClient(path=DB_PATH)
+
+collection = client.get_or_create_collection("legal_docs")
 
 
 def ask_rag(query):
@@ -10,23 +15,22 @@ def ask_rag(query):
         query_texts=[query],
         n_results=3
     )
+    print("DEBUG RESULTS:", results)
+    docs = results.get("documents")
 
-    docs = results["documents"]
-
-    # IMPORTANT FIX
-    if not docs or not docs[0]:
+    if not docs or len(docs[0]) == 0:
         return {
             "short_answer": "No answer found.",
-            "reasoning": "No matching legal content found.",
+            "reasoning": "No matching legal content found in database.",
             "key_points": ""
         }
 
-    flat_docs = docs[0]
+    top_docs = docs[0]
 
-    context = "\n\n".join(flat_docs)
+    context = "\n\n".join(top_docs)
 
     return {
-        "short_answer": flat_docs[0][:500],
+        "short_answer": top_docs[0][:500],
         "reasoning": context,
-        "key_points": "Retrieved from IPC legal database"
+        "key_points": "Retrieved from legal Chroma DB"
     }
