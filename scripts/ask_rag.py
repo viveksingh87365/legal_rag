@@ -1,100 +1,46 @@
-import os
-import sys
-import chromadb
-import requests
 import streamlit as st
+import chromadb
+from google import genai
 
-def embed_text(text):
-    api_key = st.secrets["GEMINI_API_KEY"]
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key={api_key}"
+def ask_rag(question):
+    try:
+        # Load API key from Streamlit secrets
+        api_key = st.secrets["GEMINI_API_KEY"]
 
-    payload = {
-        "model": "models/text-embedding-004",
-        "content": {
-            "parts": [
-                {"text": text}
-            ]
-        }
-    }
+        # Gemini client
+        client = genai.Client(api_key=api_key)
 
-    response = requests.post(url, json=payload)
-    result = response.json()
+        # Connect Chroma database
+        db = chromadb.PersistentClient(path="./data/chroma")
+        collection = db.get_collection("legal_docs")
 
-    print("Embedding API result:", result)
+        # Search relevant chunks
+        results = collection.query(
+            query_texts=[question],
+            n_results=3
+        )
 
-    if "embedding" not in result:
-        return None
+        context = "\n\n".join(results["documents"][0])
 
-    return result["embedding"]["values"]
+        prompt = f"""
+You are an Indian legal assistant.
 
-def main(query):
-
-    question_embedding = embed_text(query)
-
-    if question_embedding is None:
-        return "Embedding failed. Check GEMINI_API_KEY in Streamlit Secrets."
-
-    db_path = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-        "data",
-        "chroma"
-    )
-
-    client = chromadb.PersistentClient(path=db_path)
-    collection = client.get_or_create_collection(name="legal_ai")
-
-    results = collection.query(
-        query_embeddings=[question_embedding],
-        n_results=3
-    )
-
-    context = ""
-
-    if results and "documents" in results and results["documents"]:
-        context = "\n".join(results["documents"][0])
-
-prompt = f"""
-You are an AI legal assistant.
-
-Use the legal context below to answer the user's question.
-
-Return the answer in EXACTLY this format:
-
-1. Short Legal Answer:
-[your short answer]
-
-2. Relevant Legal Reasoning:
-[your reasoning]
-
-3. Important Legal Point:
-[key takeaway]
+Answer the question clearly using the legal context below.
 
 Context:
 {context}
 
 Question:
-{query}
+{question}
 """
 
-def ask_gemini(prompt):
-    api_key = st.secrets["GEMINI_API_KEY"]
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt
+        )
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+        return response.text
 
-    payload = {
-        "contents": [
-            {
-                "parts": [
-                    {"text": prompt}
-                ]
-            }
-        ]
-    }
-
-    response = requests.post(url, json=payload)
-    data = response.json()
-
-    answer = data["candidates"][0]["content"]["parts"][0]["text"]
-
-    return answer
+    except Exception as e:
+        return f"Error: {str(e)}"
