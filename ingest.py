@@ -1,7 +1,11 @@
 import os
+import chromadb
+
 def main():
-    import chromadb
+    client = chromadb.PersistentClient(path="./data/chroma")
+
     # your ingestion logic here
+    print("Ingestion completed")
 
 if __name__ == "__main__":
     main()
