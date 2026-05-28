@@ -21,15 +21,18 @@ def embed_text(text):
     response = requests.post(url, json=payload)
     result = response.json()
 
-    print(result)
+    print("Embedding API result:", result)
+
+    if "embedding" not in result:
+        return None
 
     return result["embedding"]["values"]
 
-
-
-
 def main(query):
-    question = query
+   question_embedding = embed_text(question)
+
+if question_embedding is None:
+    return "Embedding failed. Check GEMINI_API_KEY in Streamlit Secrets."
     db_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "chroma")
     client = chromadb.PersistentClient(path=db_path)
     collection = client.get_or_create_collection(name="legal_ai")
