@@ -58,16 +58,21 @@ user_question = st.text_area(
 )
 
 if st.button("Get Legal Advice", type="primary"):
-    if "error" in response:
-      st.error(response["error"])
+    if not user_question.strip():
+        st.warning("Please type a valid question first.")
     else:
-      st.success("Analysis Complete!")
+        response = ask_rag.ask_rag(user_question)
 
-      st.subheader("1. Short Legal Answer")
-      st.info(response.get("short_answer", "No answer found"))
+        if "error" in response:
+            st.error(response["error"])
+        else:
+            st.success("Analysis Complete!")
 
-      st.subheader("2. Relevant Legal Reasoning")
-      st.write(response.get("reasoning", "No reasoning available"))
+            st.subheader("1. Short Legal Answer")
+            st.info(response.get("short_answer", ""))
 
-      st.subheader("3. Important Legal Point")
-      st.warning(response.get("key_points", "No key points available"))
+            st.subheader("2. Relevant Legal Reasoning")
+            st.write(response.get("reasoning", ""))
+
+            st.subheader("3. Important Legal Point")
+            st.warning(response.get("key_points", ""))
