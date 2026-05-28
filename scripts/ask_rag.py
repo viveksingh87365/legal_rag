@@ -1,7 +1,11 @@
+import os
 import chromadb
 
+os.makedirs("./data/croma", exist_ok=True)
+
 client = chromadb.PersistentClient(path="./data/croma")
-collection = client.get_collection("legal_docs")
+
+collection = client.get_or_create_collection(name="legal_docs")
 
 
 def ask_rag(query):
@@ -16,7 +20,7 @@ def ask_rag(query):
     if not docs:
         return {
             "short_answer": "No answer found.",
-            "reasoning": "No matching legal content found in database.",
+            "reasoning": "No data in database.",
             "key_points": ""
         }
 
