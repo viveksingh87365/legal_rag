@@ -7,3 +7,4 @@ langchain-mistralai
 pydantic
 pandas
 numpy
+protobuf==3.20.3
