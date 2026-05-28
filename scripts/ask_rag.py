@@ -32,20 +32,20 @@ def main(query):
    question_embedding = embed_text(question)
 
 if question_embedding is None:
-    return "Embedding failed. Check GEMINI_API_KEY in Streamlit Secrets."
+        return "Embedding failed. Check GEMINI_API_KEY in Streamlit Secrets."
     db_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "chroma")
     client = chromadb.PersistentClient(path=db_path)
     collection = client.get_or_create_collection(name="legal_ai")
     
     # RAG pipeline logic
-    question_embedding = embed_text(question)
+    question_embedding = embed_text(query)
     results = collection.query(query_embeddings=[question_embedding], n_results=3)
     
     context = ""
     if results and "documents" in results and results["documents"]:
         context = "\n".join(results["documents"][0])
         
-    prompt = f"Context:\n{context}\n\nQuestion:\n{question}\n\nAnswer the question based on the legal context provided."
+    prompt = f"Context:\n{context}\n\nQuestion:\n{query}\n\nAnswer the question based on the legal context provided."
     
     # Gemini Cloud API Request Block
     api_key = st.secrets["GEMINI_API_KEY"]
