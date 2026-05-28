@@ -35,33 +35,36 @@ def embed_text(text: str):
 
 
 # Main program
-def main():
+def main(query):
 
-    question = input("Ask your legal question: ")
+
+    # Replace your hardcoded text string with this:
+  question = query 
+
 
     # Connect database
-    client = chromadb.PersistentClient(path=str(CHROMA_DIR))
+client = chromadb.PersistentClient(path=str(CHROMA_DIR))
 
-    collection = client.get_collection(name="legal_ai")
+collection = client.get_collection(name="legal_ai")
 
     # Convert question into AI vector
-    question_embedding = embed_text(question)
+question_embedding = embed_text(question)
 
     # Search similar legal text
-    results = collection.query(
+results = collection.query(
 
         query_embeddings=[question_embedding],
 
         n_results=3
     )
 
-    documents = results["documents"][0]
+documents = results["documents"][0]
 
     # Combine legal context
-    context = "\n\n".join(documents)
+context = "\n\n".join(documents)
 
     # AI prompt
-    prompt = f"""
+prompt = f"""
 You are an Indian legal assistant for judges.
 
 Answer shortly and accurately.
@@ -81,7 +84,7 @@ Give:
 """
 
     # Ask AI
-    response = requests.post(
+response = requests.post(
 
         f"{OLLAMA_URL}/api/chat",
 
@@ -102,13 +105,13 @@ Give:
         }
     )
 
-    data = response.json()
+data = response.json()
 
-    print("\n==========================================================")
-    print("AI LEGAL ANSWER by VIVEK KUMAR GEC AURANGABAD 2024-28(CSE)")
-    print("==========================================================\n")
+print("\n==========================================================")
+print("AI LEGAL ANSWER by VIVEK KUMAR GEC AURANGABAD 2024-28(CSE)")
+print("==========================================================\n")
 
-    print(data["message"]["content"])
+print(data["message"]["content"])
 
 
 # Run
