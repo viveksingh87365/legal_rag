@@ -1,11 +1,13 @@
-import chromadb
 import os
+import chromadb
 
-DB_PATH = os.path.abspath("data/croma")
+DB_PATH = os.path.join(os.getcwd(), "data", "croma")
+
+os.makedirs(DB_PATH, exist_ok=True)
 
 client = chromadb.PersistentClient(path=DB_PATH)
-collection = client.get_or_create_collection("legal_docs")
 
+collection = client.get_or_create_collection(name="legal_docs")
 
 def ask_rag(query):
 

@@ -4,7 +4,13 @@ from pypdf import PdfReader
 from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
 
 # Chroma database location
-client = chromadb.PersistentClient(path="./data/croma")
+import os
+import chromadb
+
+DB_PATH = os.path.join(os.getcwd(), "data", "croma")
+os.makedirs(DB_PATH, exist_ok=True)
+
+client = chromadb.PersistentClient(path=DB_PATH)
 
 embedding_function = SentenceTransformerEmbeddingFunction(
     model_name="all-MiniLM-L6-v2"
