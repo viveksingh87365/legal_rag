@@ -1,11 +1,9 @@
-import chromadb
 import os
+import chromadb
 
-# IMPORTANT: safe persistent path
 DB_PATH = os.path.join(os.getcwd(), "data/croma")
 
 client = chromadb.PersistentClient(path=DB_PATH)
-
 collection = client.get_or_create_collection("legal_docs")
 
 
@@ -13,24 +11,24 @@ def ask_rag(query):
 
     results = collection.query(
         query_texts=[query],
-        n_results=3
+        n_results=5
     )
-    print("DEBUG RESULTS:", results)
-    docs = results.get("documents")
 
-    if not docs or len(docs[0]) == 0:
+    print("DEBUG:", results)
+
+    docs = results.get("documents", [[]])[0]
+
+    if not docs:
         return {
             "short_answer": "No answer found.",
-            "reasoning": "No matching legal content found in database.",
+            "reasoning": "DB empty or not loaded in Streamlit Cloud.",
             "key_points": ""
         }
 
-    top_docs = docs[0]
-
-    context = "\n\n".join(top_docs)
+    context = "\n\n".join(docs)
 
     return {
-        "short_answer": top_docs[0][:500],
+        "short_answer": docs[0][:800],
         "reasoning": context,
-        "key_points": "Retrieved from legal Chroma DB"
+        "key_points": "From legal DB"
     }
