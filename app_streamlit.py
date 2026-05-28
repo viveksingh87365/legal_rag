@@ -14,7 +14,6 @@ from contextlib import redirect_stdout
 
 # Import your script's main logic
 # Assumes scripts/ask_rag.py has a function or can be invoked
-
 import scripts.ask_rag as ask_rag
 
 
