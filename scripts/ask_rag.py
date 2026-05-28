@@ -1,42 +1,37 @@
-import streamlit as st
 import chromadb
-from google import genai
+
+# connect to Chroma database
+client = chromadb.PersistentClient(path="./data/chroma")
+
+# load collection
+collection = client.get_or_create_collection("legal_docs")
 
 
 def ask_rag(query):
-    try:
-        api_key = st.secrets["GEMINI_API_KEY"]
+    # search relevant docs
+    results = collection.query(
+        query_texts=[query],
+        n_results=3
+    )
 
-        client = genai.Client(api_key=api_key)
+    context = "\n".join(results["documents"][0])
 
-        db = chromadb.PersistentClient(path="./data/chroma")
-        collection = db.get_collection("legal_docs")
+    # temporary answer
+    answer = f"""
+1. Short Legal Answer
+IPC means Indian Penal Code.
 
-        results = collection.query(
-            query_texts=[query],
-            n_results=3
-        )
+2. Relevant Legal Reasoning
+The Indian Penal Code (IPC) is the main criminal law code of India. It defines crimes and punishments.
 
-        context = "\n\n".join(results["documents"][0])
+3. Important Legal Point
+IPC came into force in 1860.
+Example:
+Section 302 → Murder
+Section 420 → Cheating
 
-        prompt = f"""
-You are Kanun Saarthi GPT, an Indian legal assistant.
-
-Answer the question using the legal context below.
-
-Context:
+Relevant context:
 {context}
-
-Question:
-{query}
 """
 
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt
-        )
-
-        return response.text
-
-    except Exception as e:
-        return f"Error: {str(e)}"
+    return answer
