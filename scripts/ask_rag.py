@@ -5,29 +5,28 @@ import requests
 import streamlit as st
 
 def embed_text(text):
-    import requests
+    api_key = st.secrets["GEMINI_API_KEY"]
 
-API_KEY = "YOUR_NEW_KEY"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key={api_key}"
 
-url = f"https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key={API_KEY}"
-
-headers = {
-    "Content-Type": "application/json"
-}
-
-data = {
-    "contents": [
-        {
+    payload = {
+        "model": "models/text-embedding-004",
+        "content": {
             "parts": [
-                {"text": "Hello"}
+                {"text": text}
             ]
         }
-    ]
-}
+    }
 
-response = requests.post(url, headers=headers, json=data)
+    response = requests.post(url, json=payload)
+    result = response.json()
 
-print(response.json())
+    print(result)
+
+    return result["embedding"]["values"]
+
+
+
 
 def main(query):
     question = query
@@ -47,7 +46,7 @@ def main(query):
     
     # Gemini Cloud API Request Block
     api_key = st.secrets["GEMINI_API_KEY"]
-    url = f"https://googleapis.com{api_key}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
     payload = {
         "contents": [{
             "parts": [{"text": prompt}]
