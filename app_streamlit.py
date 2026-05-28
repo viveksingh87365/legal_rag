@@ -1,9 +1,6 @@
 import os
 import subprocess
-# Auto-build database if missing (Streamlit Cloud fix)
-if not os.path.exists("./data/croma/chroma.sqlite3"):
-    os.makedirs("./data/croma", exist_ok=True)
-    subprocess.run(["python3", "ingest.py"])
+
 
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -66,7 +63,7 @@ if st.button("Get Legal Advice", type="primary"):
     if not user_question.strip():
         st.warning("Please type a valid question first.")
     else:
-        response = ask_rag.ask_rag(user_question)
+        response = run_rag_and_parse(user_question)
 
         if "error" in response:
             st.error(response["error"])
