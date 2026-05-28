@@ -65,23 +65,15 @@ if st.button("Get Legal Advice", type="primary"):
             response = ask_rag.ask_rag(user_question)
             
         if "error" in response:
-            st.error(response["error"])
-        else:
-            st.success("Analysis Complete!")
-            st.markdown("---")
-            
-            # Subheader 1
-            st.subheader("1. Short Legal Answer")
-            st.info(response["short_answer"])
-            
-            # Subheader 2
-            st.subheader("2. Relevant Legal Reasoning")
-            st.write(response["legal_reasoning"])
-            
-            # Subheader 3
-            st.subheader("3. Important Legal Point")
-            st.warning(response["important_point"])
-            
-            # Hidden debug expander to view raw unparsed logs if needed
-            with st.expander("View Raw Console Output Log"):
-                st.code(response["raw_fallback"])
+    st.error(response["error"])
+else:
+    st.success("Analysis Complete!")
+
+    st.subheader("1. Short Legal Answer")
+    st.info(response.get("short_answer", "No answer found"))
+
+    st.subheader("2. Relevant Legal Reasoning")
+    st.write(response.get("reasoning", "No reasoning available"))
+
+    st.subheader("3. Important Legal Point")
+    st.warning(response.get("key_points", "No key points available"))
