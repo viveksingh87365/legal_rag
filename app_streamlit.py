@@ -62,7 +62,7 @@ if st.button("Get Legal Advice", type="primary"):
         st.warning("Please type a valid question first.")
     else:
         with st.spinner("Processing your legal query against document vector store..."):
-            response = run_rag_and_parse(user_question)
+            response = ask_rag.ask_rag(user_question)
             
         if "error" in response:
             st.error(response["error"])
