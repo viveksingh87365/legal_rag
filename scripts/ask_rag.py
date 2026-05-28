@@ -16,22 +16,22 @@ EMBED_MODEL = "nomic-embed-text"
 CHAT_MODEL = "mistral"
 
 
-# Create embedding for question
-def embed_text(text: str):
+import streamlit as st
+import requests
 
-    response = requests.post(
+def embed_text(text):
+    api_key = st.secrets["GEMINI_API_KEY"]
+    url = f"https://googleapis.com{api_key}"
+    
+    payload = {
+        "model": "models/text-embedding-004",
+        "content": {"parts": [{"text": text}]}
+    }
+    
+    response = requests.post(url, json=payload)
+    return response.json()["embedding"]["values"]
 
-        f"{OLLAMA_URL}/api/embed",
 
-        json={
-            "model": EMBED_MODEL,
-            "input": text
-        }
-    )
-
-    data = response.json()
-
-    return data["embeddings"][0]
 
 
 # Main program
@@ -89,26 +89,21 @@ Give:
 """
 
     # Ask AI
-  response = requests.post(
-
-        f"{OLLAMA_URL}/api/chat",
-
-        json={
-
-            "model": CHAT_MODEL,
-
-            "messages": [
-
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-
-             ],
-
-            "stream": False
-        }
-     )
+      api_key = st.secrets["GEMINI_API_KEY"]
+    url = f"https://googleapis.com{api_key}"
+    
+    payload = {
+        "contents": [{
+            "parts": [{"text": prompt}]
+        }]
+    }
+    
+    response = requests.post(url, json=payload)
+    data = response.json()
+    
+    answer = data["candidates"][0]["content"]["parts"][0]["text"]
+    print(answer)
+    return answer
 
   data = response.json()
 
