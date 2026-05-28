@@ -1,32 +1,38 @@
 import chromadb
+from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
+
+embedding_function = SentenceTransformerEmbeddingFunction(
+    model_name="all-MiniLM-L6-v2"
+)
 
 client = chromadb.PersistentClient(path="./data/croma")
-collection = client.get_or_create_collection("legal_docs")
+
+collection = client.get_collection(
+    name="legal_docs",
+    embedding_function=embedding_function
+)
 
 
 def ask_rag(query):
 
     results = collection.query(
         query_texts=[query],
-        n_results=3
+        n_results=5
     )
 
-    docs = results.get("documents", [])
+    docs = results.get("documents", [[]])[0]
 
-    # SAFE CHECK (VERY IMPORTANT)
-    if not docs or not docs[0]:
+    if not docs:
         return {
             "short_answer": "No answer found.",
             "reasoning": "No matching legal content found in database.",
             "key_points": ""
         }
 
-    context_list = docs[0]
-
-    context = "\n\n".join(context_list)
+    context = "\n\n".join(docs)
 
     return {
-        "short_answer": context[:400],
+        "short_answer": context[:700],
         "reasoning": context,
-        "key_points": "Answer generated from legal PDF database."
+        "key_points": "Generated from legal database"
     }
