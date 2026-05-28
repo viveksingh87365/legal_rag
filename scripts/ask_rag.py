@@ -1,38 +1,35 @@
 import chromadb
-import subprocess
 import os
 
-DB_PATH = "/tmp/chroma_db"
+DB_PATH = os.path.abspath("./data/croma")
 
 client = chromadb.PersistentClient(path=DB_PATH)
 collection = client.get_or_create_collection("legal_docs")
 
 
-# auto rebuild if empty
-if collection.count() == 0:
-    subprocess.run(["python3", "ingest.py"])
-
-
 def ask_rag(query):
+
+    print("DB PATH:", DB_PATH)
+    print("COLLECTION COUNT:", collection.count())
 
     results = collection.query(
         query_texts=[query],
         n_results=5
     )
 
+    print("DEBUG RESULTS:", results)
+
     docs = results.get("documents", [[]])[0]
 
-    if not docs:
+    if len(docs) == 0:
         return {
             "short_answer": "No answer found.",
-            "reasoning": "Database not loaded in cloud.",
+            "reasoning": "EMPTY RESULTS FROM CHROMA",
             "key_points": ""
         }
 
-    context = "\n\n".join(docs)
-
     return {
         "short_answer": docs[0][:800],
-        "reasoning": context,
-        "key_points": "From legal DB"
+        "reasoning": "\n\n".join(docs),
+        "key_points": "From DB"
     }

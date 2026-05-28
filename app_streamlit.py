@@ -1,6 +1,7 @@
 import os
 import subprocess
-
+if not os.path.exists("./data/croma/chroma.sqlite3"):
+    subprocess.run(["python3", "ingest.py"])
 
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
