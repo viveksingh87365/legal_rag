@@ -44,31 +44,32 @@ def main(query):
 
     # Connect database
 
-db_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "chroma")
-client = chromadb.PersistentClient(path=db_path)
+  db_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "chroma") 
+
+  client = chromadb.PersistentClient(path=db_path)
 
 
-collection = client.get_or_create_collection(name="legal_ai")
+  collection = client.get_or_create_collection(name="legal_ai")
 
 
     # Convert question into AI vector
-question_embedding = embed_text(question)
+  question_embedding = embed_text(question)
 
     # Search similar legal text
-results = collection.query(
+  results = collection.query(
 
         query_embeddings=[question_embedding],
 
         n_results=3
     )
 
-documents = results["documents"][0]
+  documents = results["documents"][0]
 
     # Combine legal context
-context = "\n\n".join(documents)
+  context = "\n\n".join(documents)
 
     # AI prompt
-prompt = f"""
+  prompt = f"""
 You are an Indian legal assistant for judges.
 
 Answer shortly and accurately.
@@ -76,10 +77,10 @@ Answer shortly and accurately.
 Use ONLY the provided legal context.
 
 Question:
-{question}
+   {question}
 
 Legal Context:
-{context}
+   {context}
 
 Give:
 1. Short legal answer
