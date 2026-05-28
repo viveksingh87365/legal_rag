@@ -43,9 +43,13 @@ def main(query):
 
 
     # Connect database
-client = chromadb.PersistentClient(path=str(CHROMA_DIR))
 
-collection = client.get_collection(name="legal_ai")
+db_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "chroma")
+client = chromadb.PersistentClient(path=db_path)
+
+
+collection = client.get_or_create_collection(name="legal_ai")
+
 
     # Convert question into AI vector
 question_embedding = embed_text(question)
