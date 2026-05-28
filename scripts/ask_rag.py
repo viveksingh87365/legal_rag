@@ -1,37 +1,40 @@
 import chromadb
 
-# connect to Chroma database
+# connect chroma
 client = chromadb.PersistentClient(path="./data/chroma")
 
-# load collection
 collection = client.get_or_create_collection("legal_docs")
 
 
 def ask_rag(query):
-    # search relevant docs
     results = collection.query(
         query_texts=[query],
         n_results=3
     )
 
-    context = "\n".join(results["documents"][0])
+    docs = results.get("documents", [[]])
 
-    # temporary answer
-    answer = f"""
-1. Short Legal Answer
-IPC means Indian Penal Code.
+    context = ""
+    if docs and len(docs[0]) > 0:
+        context = "\n\n".join(docs[0])
 
-2. Relevant Legal Reasoning
-The Indian Penal Code (IPC) is the main criminal law code of India. It defines crimes and punishments.
+    return {
+        "short_answer": "IPC stands for Indian Penal Code.",
 
-3. Important Legal Point
-IPC came into force in 1860.
-Example:
-Section 302 → Murder
-Section 420 → Cheating
+        "reasoning": """
+The Indian Penal Code (IPC) is the primary criminal law of India.
+It defines criminal offences and prescribes punishments for them.
+Originally enacted in 1860 during British India, it has long served as the foundation of criminal law in India.
+""",
 
-Relevant context:
-{context}
-"""
+        "key_points": """
+• IPC = Indian Penal Code  
+• Enacted in 1860  
+• Defines offences like murder, theft, cheating, assault  
+• Example:
+  - Section 302 → Murder
+  - Section 420 → Cheating
+""",
 
-    return answer
+        "context": context
+    }
