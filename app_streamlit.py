@@ -47,7 +47,7 @@ def run_rag_and_parse(question: str):
 
 st.set_page_config(page_title="AI Legal Assistant", page_icon="⚖️", layout="centered")
 
-st.title("⚖️ AI Legal Assistant")
+st.title("⚖️ KAKUNSARHIGPT - Your AI Legal Assistant")
 st.caption("AI LEGAL ANSWER by VIVEK KUMAR GEC AURANGABAD 2024-28 (CSE)")
 st.markdown("---")
 
