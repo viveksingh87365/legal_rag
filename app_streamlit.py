@@ -1,7 +1,5 @@
 import os
 import subprocess
-if not os.path.exists("./data/croma/chroma.sqlite3"):
-    subprocess.run(["python3", "ingest.py"])
 
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -75,7 +73,7 @@ if st.button("Get Legal Advice", type="primary"):
             st.info(response.get("short_answer", ""))
 
             st.subheader("2. Relevant Legal Reasoning")
-            st.write(response.get("reasoning", ""))
+            st.write(response.get("legal_reasoning", ""))
 
             st.subheader("3. Important Legal Point")
-            st.warning(response.get("key_points", ""))
+            st.warning(response.get("important_point", ""))

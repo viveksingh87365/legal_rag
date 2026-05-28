@@ -1,11 +1,13 @@
 import os
-import chromadb
-from pypdf import PdfReader
-from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
+def main():
+    import chromadb
+    # your ingestion logic here
+
+if __name__ == "__main__":
+    main()
+
 
 # Chroma database location
-import os
-import chromadb
 
 DB_PATH = os.path.join(os.getcwd(), "data", "croma")
 os.makedirs(DB_PATH, exist_ok=True)
