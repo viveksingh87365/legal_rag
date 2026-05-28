@@ -1,6 +1,6 @@
 import chromadb
 
-client = chromadb.PersistentClient(path="./data/chroma")
+client = chromadb.PersistentClient(path="./data/croma")
 collection = client.get_or_create_collection("legal_docs")
 
 
