@@ -54,13 +54,27 @@ def main(query):
     if results and "documents" in results and results["documents"]:
         context = "\n".join(results["documents"][0])
 
-    prompt = f"""Context:
+prompt = f"""
+You are an AI legal assistant.
+
+Use the legal context below to answer the user's question.
+
+Return the answer in EXACTLY this format:
+
+1. Short Legal Answer:
+[your short answer]
+
+2. Relevant Legal Reasoning:
+[your reasoning]
+
+3. Important Legal Point:
+[key takeaway]
+
+Context:
 {context}
 
 Question:
 {query}
-
-Answer the question based on the legal context provided.
 """
 
     api_key = st.secrets["GEMINI_API_KEY"]
