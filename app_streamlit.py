@@ -1,23 +1,30 @@
 import os
-import urllib.request
 import zipfile
 import streamlit as st
+import gdown
 
-# --- NEW DATABASE DOWNLOAD LOGIC (FOR STREAMLIT CLOUD) ---
+# --- UPDATED DATABASE DOWNLOAD LOGIC (FOR STREAMLIT CLOUD) ---
 DB_FOLDER = "data"
 
 if not os.path.exists(DB_FOLDER):
     with st.spinner("Downloading legal database from Google Drive... Please wait."):
         try:
-            url = "https://google.com" 
-            urllib.request.urlretrieve(url, "data.zip")
+            # Your exact Google Drive file ID
+            file_id = "1NVwtteZY3_Q6Yoh0RQjqv1xufrQFaxPB"
+            url = f"https://google.com{file_id}"
             
+            # Using gdown to bypass the Google Drive warning page securely
+            gdown.download(url, "data.zip", quiet=False)
+            
+            # Extracting the folder contents
             with zipfile.ZipFile("data.zip", "r") as zip_ref:
                 zip_ref.extractall(".")
                 
             os.remove("data.zip")
         except Exception as e:
             st.error(f"Failed to download database: {e}")
+# ---------------------------------------------------------
+
 # ---------------------------------------------------------
 
 # ---------------------------------------------------------
