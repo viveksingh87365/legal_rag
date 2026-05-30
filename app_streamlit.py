@@ -12,13 +12,12 @@ if not os.path.exists(DB_FOLDER):
             file_id = "1NVwtteZY3_Q6Yoh0R0jqv1xufrQFaxPB"
             url = f"https://google.com{file_id}"
             gdown.download(url, "data.zip", quiet=False)
-            
             with zipfile.ZipFile("data.zip", "r") as zip_ref:
                 zip_ref.extractall(".")
-                
             os.remove("data.zip")
         except Exception as e:
             st.error(f"Failed to download database: {e}")
+
 
 # ---------------------------------------------------------
 
