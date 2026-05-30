@@ -9,13 +9,16 @@ DB_FOLDER = "data"
 # No if statement, no indents - this runs directly safely
 st.info("Downloading legal database...")
 file_id = "1NVwtteZY3_Q6Yoh0R0jqv1xufrQFaxPB"
-url = f"https://google.com{file_id}"
-gdown.download(url, "data.zip", quiet=False)
+
+# This uses gdown's official built-in ID handler directly
+gdown.download(id=file_id, output="data.zip", quiet=False)
+
 zip_ref = zipfile.ZipFile("data.zip", "r")
 zip_ref.extractall(".")
 zip_ref.close()
 os.remove("data.zip")
 st.success("Database ready!")
+
 
 # ---------------------------------------------------------
 
