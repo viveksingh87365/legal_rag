@@ -9,8 +9,9 @@ DB_FOLDER = "data"
 if not os.path.exists(DB_FOLDER):
     with st.spinner("Downloading legal database from Google Drive... Please wait."):
         try:
-            file_id = "1NVwtteZY3_Q6Yoh0RQjqv1xufrQFaxPB"
-            url = f"https://google.com{file_id}"
+           file_id = "1NVwtteZY3_Q6Yoh0R0jqv1xufrQFaxPB"
+           url = f"https://google.com{file_id}"
+
             gdown.download(url, "data.zip", quiet=False)
             
             with zipfile.ZipFile("data.zip", "r") as zip_ref:
