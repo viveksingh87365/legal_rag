@@ -1,19 +1,36 @@
 import os
+import urllib.request
+import zipfile
+import streamlit as st
 
+# --- NEW DATABASE DOWNLOAD LOGIC (FOR STREAMLIT CLOUD) ---
+DB_FOLDER = "data"
+
+if not os.path.exists(DB_FOLDER):
+    with st.spinner("Downloading legal database from Google Drive... Please wait."):
+        try:
+            url = "https://google.com" 
+            urllib.request.urlretrieve(url, "data.zip")
+            
+            with zipfile.ZipFile("data.zip", "r") as zip_ref:
+                zip_ref.extractall(".")
+                
+            os.remove("data.zip")
+        except Exception as e:
+            st.error(f"Failed to download database: {e}")
+# ---------------------------------------------------------
+
+# ---------------------------------------------------------
 
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import streamlit as st
-
 import re
-
 import io
-
-import sys
 from contextlib import redirect_stdout
-
 import scripts.ask_rag as ask_rag
+
 def run_rag_and_parse(question: str):
     try:
         result = ask_rag.ask_rag(question)
@@ -37,12 +54,6 @@ def run_rag_and_parse(question: str):
         return {
             "error": str(e)
         }
-
-
-
- 
-       
-
 
 # ----------------- STREAMLIT UI LAYOUT -----------------
 
