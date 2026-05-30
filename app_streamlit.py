@@ -6,17 +6,16 @@ import gdown
 # --- UPDATED DATABASE DOWNLOAD LOGIC (FOR STREAMLIT CLOUD) ---
 DB_FOLDER = "data"
 
-if not os.path.exists(DB_FOLDER):
-    st.info("Downloading legal database...")
-    file_id = "1NVwtteZY3_Q6Yoh0R0jqv1xufrQFaxPB"
-    url = f"https://google.com{file_id}"
-    gdown.download(url, "data.zip", quiet=False)
-    zip_ref = zipfile.ZipFile("data.zip", "r")
-    zip_ref.extractall(".")
-    zip_ref.close()
-    os.remove("data.zip")
-    st.success("Database ready!")
-
+# No if statement, no indents - this runs directly safely
+st.info("Downloading legal database...")
+file_id = "1NVwtteZY3_Q6Yoh0R0jqv1xufrQFaxPB"
+url = f"https://google.com{file_id}"
+gdown.download(url, "data.zip", quiet=False)
+zip_ref = zipfile.ZipFile("data.zip", "r")
+zip_ref.extractall(".")
+zip_ref.close()
+os.remove("data.zip")
+st.success("Database ready!")
 
 # ---------------------------------------------------------
 
