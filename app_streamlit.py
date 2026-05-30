@@ -10,9 +10,10 @@ if not os.path.exists(DB_FOLDER):
     with st.spinner("Downloading legal database from Google Drive... Please wait."):
         try:
             # Your exact Google Drive file ID
+                        # Cleaned Google Drive connection path
             file_id = "1NVwtteZY3_Q6Yoh0RQjqv1xufrQFaxPB"
             url = f"https://google.com{file_id}"
-            
+
             # Using gdown to bypass the Google Drive warning page securely
             gdown.download(url, "data.zip", quiet=False)
             
