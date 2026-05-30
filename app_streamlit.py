@@ -9,15 +9,10 @@ DB_FOLDER = "data"
 if not os.path.exists(DB_FOLDER):
     with st.spinner("Downloading legal database from Google Drive... Please wait."):
         try:
-            # Your exact Google Drive file ID
-                        # Cleaned Google Drive connection path
             file_id = "1NVwtteZY3_Q6Yoh0RQjqv1xufrQFaxPB"
             url = f"https://google.com{file_id}"
-
-            # Using gdown to bypass the Google Drive warning page securely
             gdown.download(url, "data.zip", quiet=False)
             
-            # Extracting the folder contents
             with zipfile.ZipFile("data.zip", "r") as zip_ref:
                 zip_ref.extractall(".")
                 
@@ -26,14 +21,9 @@ if not os.path.exists(DB_FOLDER):
             st.error(f"Failed to download database: {e}")
 # ---------------------------------------------------------
 
-# ---------------------------------------------------------
-
-# ---------------------------------------------------------
-
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-import streamlit as st
 import re
 import io
 from contextlib import redirect_stdout
