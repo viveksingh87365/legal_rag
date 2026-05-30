@@ -86,3 +86,4 @@ if st.button("Get Legal Advice", type="primary"):
 
             st.subheader("3. Important Legal Point")
             st.warning(response.get("important_point", ""))
+# Cache Reset: Sat May 30 16:05:29 IST 2026
