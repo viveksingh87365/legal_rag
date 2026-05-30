@@ -7,16 +7,15 @@ import gdown
 DB_FOLDER = "data"
 
 if not os.path.exists(DB_FOLDER):
-    with st.spinner("Downloading legal database from Google Drive... Please wait."):
-        try:
-            file_id = "1NVwtteZY3_Q6Yoh0R0jqv1xufrQFaxPB"
-            url = f"https://google.com{file_id}"
-            gdown.download(url, "data.zip", quiet=False)
-            with zipfile.ZipFile("data.zip", "r") as zip_ref:
-                zip_ref.extractall(".")
-            os.remove("data.zip")
-        except Exception as e:
-            st.error(f"Failed to download database: {e}")
+    st.info("Downloading legal database...")
+    file_id = "1NVwtteZY3_Q6Yoh0R0jqv1xufrQFaxPB"
+    url = f"https://google.com{file_id}"
+    gdown.download(url, "data.zip", quiet=False)
+    zip_ref = zipfile.ZipFile("data.zip", "r")
+    zip_ref.extractall(".")
+    zip_ref.close()
+    os.remove("data.zip")
+    st.success("Database ready!")
 
 
 # ---------------------------------------------------------
