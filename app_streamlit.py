@@ -8,12 +8,11 @@ DB_FOLDER = os.path.join("data", "croma")
 
 if not os.path.exists(DB_FOLDER) or not os.listdir(DB_FOLDER):
     st.info("Database files missing. Downloading 403MB archive from Google Drive...")
-    file_id = "1NVwtteZY3_Q6Yoh0RQjqv1xufrQFaxPB"
     destination = "data.zip"
     
     try:
-        # Appending confirm=t directly tells Google Drive to skip the warning page and stream the raw zip file
-        URL = f"https://google.com{file_id}&confirm=t"
+        # Standard clean link format to prevent syntax address errors
+        URL = "https://google.com"
         
         response = requests.get(URL, stream=True)
         
@@ -22,7 +21,6 @@ if not os.path.exists(DB_FOLDER) or not os.listdir(DB_FOLDER):
                 if chunk:
                     f.write(chunk)
                     
-        # Check if file size is substantial (not a tiny HTML text error snippet)
         if os.path.exists(destination) and os.path.getsize(destination) > 5000:
             with zipfile.ZipFile(destination, "r") as zip_ref:
                 zip_ref.extractall(".")
@@ -35,14 +33,6 @@ if not os.path.exists(DB_FOLDER) or not os.listdir(DB_FOLDER):
         st.error(f"Download failed: {download_error}")
 else:
     st.sidebar.success("Database loaded successfully from local cache!")
-
-    
-   
-                    
-        # Extract the downloaded zip archive
-       
-
-
 
 # ---------------------------------------------------------
 
