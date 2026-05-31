@@ -65,6 +65,7 @@ def ask_rag(query):
         
         # Exact regional production routing
         url = "https://googleapis.com"
+
         
         headers = {"Content-Type": "application/json"}
         payload = {
@@ -80,6 +81,7 @@ def ask_rag(query):
             try:
                 response_json = response.json()
                 answer_text = response_json["candidates"][0]["content"]["parts"][0]["text"]
+
             except Exception:
                 answer_text = f"Status 200 OK, but JSON parsing layout shifted: {response.text[:250]}"
         else:
