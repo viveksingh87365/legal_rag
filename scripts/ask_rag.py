@@ -37,8 +37,11 @@ def ask_rag(query):
     
     context = "\n\n".join(docs)
     # Set up the Gemini client with explicit Streamlit secrets authentication
+        # Set up the Gemini client with a forced environment variable assignment
     import streamlit as st
-    ai_client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
+    os.environ["GEMINI_API_KEY"] = st.secrets["GEMINI_API_KEY"]
+    ai_client = genai.Client()
+
 
     
     prompt = f"""
