@@ -19,7 +19,8 @@ if not os.path.exists(DB_FOLDER) or not os.listdir(DB_FOLDER):
     
     try:
         url = f"https://google.com{file_id}"
-        gdown.download(url, output="data.zip", quiet=False, fuzzy=True)
+        gdown.download(url, output="data.zip", quiet=False)
+
         
         if os.path.exists("data.zip"):
             with zipfile.ZipFile("data.zip", "r") as zip_ref:
