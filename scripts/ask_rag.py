@@ -38,9 +38,18 @@ def ask_rag(query):
     context = "\n\n".join(docs)
     # Set up the Gemini client with explicit Streamlit secrets authentication
         # Set up the Gemini client with a forced environment variable assignment
+        # Set up the Gemini client using your Streamlit secrets key directly
     import streamlit as st
-    os.environ["GEMINI_API_KEY"] = st.secrets["GEMINI_API_KEY"]
-    ai_client = genai.Client()
+    
+    try:
+        api_key_val = st.secrets["GEMINI_API_KEY"]
+        ai_client = genai.Client(api_key=api_key_val)
+    except Exception as secret_error:
+        return {
+            "short_answer": "Secrets Configuration Error",
+            "reasoning": f"Could not read GEMINI_API_KEY from Streamlit: {str(secret_error)}",
+            "key_points": ""
+        }
 
 
     
