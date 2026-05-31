@@ -12,12 +12,12 @@ import os
 import zipfile
 import gdown
 
+# --- CLEAN DATABASE DOWNLOAD AND CHECK LOGIC ---
 DB_FOLDER = os.path.join("data", "croma")
 
 if not os.path.exists(DB_FOLDER) or not os.listdir(DB_FOLDER):
-    st.info("Database empty or missing. Starting 403MB download from Google Drive...")
+    st.info("Database empty or missing. Starting download...")
     file_id = "1NWwtteZY3_Q6Yoh0RQjqv1xufrQFaxPB"
-    
     try:
         gdown.download(id=file_id, output="data.zip", quiet=False)
         if os.path.exists("data.zip"):
@@ -30,11 +30,6 @@ if not os.path.exists(DB_FOLDER) or not os.listdir(DB_FOLDER):
 else:
     st.sidebar.success("Database loaded successfully from local cache!")
 
-
-    except Exception as download_error:
-        st.error(f"Download failed: {download_error}")
-else:
-    st.sidebar.success("Database loaded successfully from local cache!")
 
 
     
