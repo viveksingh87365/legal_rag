@@ -37,8 +37,8 @@ def ask_rag(query):
     
     context = "\n\n".join(docs)
     # Set up the Gemini client with explicit Streamlit secrets authentication
-import streamlit as st
-ai_client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
+    import streamlit as st
+    ai_client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
 
     
     prompt = f"""
