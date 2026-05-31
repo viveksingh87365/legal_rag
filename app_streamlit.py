@@ -7,6 +7,7 @@ import gdown
 DB_FOLDER = "data"
 # --- ENHANCED DATABASE VERIFICATION ---
 # --- ENHANCED DATABASE VERIFICATION ---
+# --- ENHANCED DATABASE VERIFICATION ---
 import os
 import zipfile
 import gdown
@@ -17,15 +18,18 @@ if not os.path.exists(DB_FOLDER) or not os.listdir(DB_FOLDER):
     st.info("Database empty or missing. Starting 403MB download from Google Drive...")
     file_id = "1NWwtteZY3_Q6Yoh0RQjqv1xufrQFaxPB"
     
-      try:
-        # Use the ID directly to avoid URL spelling mistakes
+    try:
         gdown.download(id=file_id, output="data.zip", quiet=False)
-        
         if os.path.exists("data.zip"):
             with zipfile.ZipFile("data.zip", "r") as zip_ref:
                 zip_ref.extractall(".")
             os.remove("data.zip")
             st.success("Database fully downloaded and extracted!")
+    except Exception as download_error:
+        st.error(f"Download failed: {download_error}")
+else:
+    st.sidebar.success("Database loaded successfully from local cache!")
+
 
     except Exception as download_error:
         st.error(f"Download failed: {download_error}")
