@@ -63,7 +63,7 @@ def ask_rag(query):
     try:
         api_key_val = str(st.secrets["GEMINI_API_KEY"]).strip()
         
-        # Route to the Vertex AI Express Mode endpoint using your specific project number
+        # Exact regional production routing
         url = "https://googleapis.com"
         
         headers = {"Content-Type": "application/json"}
@@ -73,26 +73,23 @@ def ask_rag(query):
             }]
         }
         
-        # Send the API request with the key as a safe parameter mapping
         response = requests.post(url, headers=headers, json=payload, params={"key": api_key_val})
-        response_json = response.json()
         
-        if "candidates" in response_json and response_json["candidates"]:
-            first_candidate = response_json["candidates"][0]
-            if "content" in first_candidate and "parts" in first_candidate["content"]:
-                answer_text = first_candidate["content"]["parts"][0]["text"]
-            else:
-                answer_text = "Successfully connected, but could not parse text tokens from the response."
-        elif "error" in response_json:
-            answer_text = f"Vertex AI API Error: {response_json['error']['message']}"
+        # Safe diagnostic checking to read what the text says without throwing JSON failures
+        if response.status_code == 200:
+            try:
+                response_json = response.json()
+                answer_text = response_json["candidates"][0]["content"]["parts"][0]["text"]
+            except Exception:
+                answer_text = f"Status 200 OK, but JSON parsing layout shifted: {response.text[:250]}"
         else:
-            answer_text = f"Unrecognized API response layout: {str(response_json)[:200]}"
+            answer_text = f"Server Error Code {response.status_code}. Server Response Message: {response.text[:250]}"
             
     except Exception as e:
-        answer_text = f"API network exception error: {str(e)}"
+        answer_text = f"API exception processing error: {str(e)}"
 
     return {
         "short_answer": answer_text,
         "reasoning": context,
-        "key_points": "Routed via Enterprise Vertex AI Endpoint"
+        "key_points": "Diagnostic checking active"
     }
