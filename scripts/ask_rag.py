@@ -2,40 +2,40 @@ import os
 import chromadb
 from google import genai
 
-# Automatically try both "croma" and "chroma" to find where the data is stored
-if os.path.exists(os.path.join(os.getcwd(), "data", "croma")):
-    DB_PATH = os.path.join(os.getcwd(), "data", "croma")
-elif os.path.exists(os.path.join(os.getcwd(), "data", "chroma")):
-    DB_PATH = os.path.join(os.getcwd(), "data", "chroma")
-else:
-    DB_PATH = os.path.join(os.getcwd(), "data")
+DB_PATH = os.path.join(os.getcwd(), "data", "croma")
 
-client = chromadb.PersistentClient(path=DB_PATH)
-collection = client.get_or_create_collection(name="legal_docs")
+def get_collection():
+    # Only initialize the client when a query is actually made
+    client = chromadb.PersistentClient(path=DB_PATH)
+    return client.get_or_create_collection(name="legal_docs")
 
 def ask_rag(query):
-    results = collection.query(
-        query_texts=[query],
-        n_results=5
-    )
-    
-    # Get the raw list of documents
-    raw_docs = results.get("documents", [])
-    
-    # Extract the first inner list safely
-    docs = raw_docs[0] if raw_docs else []
-    
-    if not docs or len(docs) == 0:
+    try:
+        collection = get_collection()
+        results = collection.query(
+            query_texts=[query],
+            n_results=5
+        )
+        
+        # Safely get the list of document strings
+        raw_docs = results.get("documents", [[]])
+        docs = raw_docs[0] if raw_docs else []
+        
+    except Exception as db_error:
         return {
-            "short_answer": "No answer found.",
-            "reasoning": f"Database folder located at {DB_PATH} but no matching documents were retrieved.",
+            "short_answer": "Database connection error.",
+            "reasoning": f"ChromaDB error: {str(db_error)}",
             "key_points": ""
         }
     
-    # Combine the database document text into a single context block
-    context = "\n\n".join(docs)
+    if not docs:
+        return {
+            "short_answer": "No matching documents found.",
+            "reasoning": "The database is connected but contains 0 documents. It needs to be re-downloaded.",
+            "key_points": ""
+        }
     
-    # Set up the Gemini client
+    context = "\n\n".join(docs)
     ai_client = genai.Client()
     
     prompt = f"""
