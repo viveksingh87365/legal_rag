@@ -6,19 +6,29 @@ import gdown
 # --- UPDATED DATABASE DOWNLOAD LOGIC (FOR STREAMLIT CLOUD) ---
 DB_FOLDER = "data"
 
-# --- UPDATED DATABASE DOWNLOAD LOGIC (FOR STREAMLIT CLOUD) ---
+# --- FIXED DATABASE CHECK & DOWNLOAD ---
 DB_FOLDER = "data"
 
 if not os.path.exists(DB_FOLDER):
-    st.info("Downloading legal database...")
+    st.info("Downloading legal database archive...")
     file_id = "1NWwtteZY3_Q6Yoh0RQjqv1xufrQFaxPB"
     
-    # This uses gdown's official built-in ID handler directly
-    gdown.download(id=file_id, output="data.zip", quiet=False)
-    
-    zip_ref = zipfile.ZipFile("data.zip", "r")
-    zip_ref.extractall(".")
-    zip_ref.close()
+    try:
+        # Using fuzzy download to bypass large file confirmation screens
+        url = f"https://google.com{file_id}"
+        gdown.download(url, output="data.zip", quiet=False, fuzzy=True)
+        
+        if os.path.exists("data.zip"):
+            import zipfile
+            with zipfile.ZipFile("data.zip", "r") as zip_ref:
+                zip_ref.extractall(".")
+            os.remove("data.zip")
+            st.success("Database successfully extracted!")
+    except Exception as download_error:
+        st.error(f"Download failed: {download_error}. Please try rebooting the app.")
+else:
+    st.sidebar.success("Database loaded from local cache!")
+
     
     if os.path.exists("data.zip"):
         os.remove("data.zip")
