@@ -1,6 +1,6 @@
-# --- AUTOMATED GOOGLE DRIVE LARGE FILE BYPASS ---
+
+           # --- PRODUCTION-GRADE LARGE FILE GOOGLE DRIVE DOWNLOADER ---
 import os
-import re
 import zipfile
 import requests
 import streamlit as st
@@ -8,7 +8,7 @@ import streamlit as st
 DB_FOLDER = os.path.join("data", "croma")
 
 if not os.path.exists(DB_FOLDER) or not os.listdir(DB_FOLDER):
-    st.info("Database files missing. Bypassing Google virus warning page...")
+    st.info("Database empty or missing. Initializing direct stream from Google Drive...")
     destination = "data.zip"
     file_id = "1NVwtteZY3_Q6Yoh0RQjqv1xufrQFaxPB"
     
@@ -16,48 +16,48 @@ if not os.path.exists(DB_FOLDER) or not os.listdir(DB_FOLDER):
         session = requests.Session()
         URL = "https://google.com"
         
-        # Step 1: Fetch the initial block page
+        # Step 1: Initialize connection to check for Google's large-file virus scan warning
         response = session.get(URL, params={'id': file_id}, stream=True)
         
-        # Step 2: Look for the confirmation token inside the HTML text content
-        html_content = response.text
-        match = re.search(r'confirm=([0-9A-Za-z_]+)', html_content)
-        
-        if match:
-            confirm_token = match.group(1)
-            # Step 3: Request the real file payload using the extracted token
-            response = session.get(URL, params={'id': file_id, 'confirm': confirm_token}, stream=True)
-        else:
-            # Try checking the cookies fallback if it wasn't in the HTML body
-            token_cookie = None
-            for key, value in response.cookies.items():
-                if 'download_warning' in key:
-                    token_cookie = value
-                    break
-            if token_cookie:
-                response = session.get(URL, params={'id': file_id, 'confirm': token_cookie}, stream=True)
-
-        # Step 4: Stream the actual zip file content down to the server
+        # Step 2: Extract the custom security token hidden inside Google's cookies
+        token = None
+        for key, value in response.cookies.items():
+            if key.startswith("download_warning"):
+                token = value
+                break
+                
+        # Step 3: If a warning token is detected, resend the request with confirmation parameters
+        if token:
+            params = {'id': file_id, 'confirm': token}
+            response = session.get(URL, params=params, stream=True)
+            
+        # Step 4: Stream the raw binary zip data onto the server disk
         with open(destination, "wb") as f:
-            for chunk in response.iter_content(chunk_size=32768):
+            for chunk in response.iter_content(chunk_size=1024 * 1024): # Stream in 1MB chunks
                 if chunk:
                     f.write(chunk)
                     
-        # Step 5: Verify and unpack the database folder
+        # Step 5: Extract files safely if it's a real zip bundle
         if zipfile.is_zipfile(destination):
             with zipfile.ZipFile(destination, "r") as zip_ref:
                 zip_ref.extractall(".")
             os.remove(destination)
-            st.success("Database successfully downloaded and extracted!")
+            st.success("Database successfully loaded and extracted! Please refresh your query.")
         else:
-            st.error("Google Drive security token could not be verified. Please refresh the page to retry.")
-            if os.path.exists(destination):
+            st.error("Downloaded file structure is invalid. Retrying via safe CLI method...")
+            # Fallback to system-level command line tool which bypasses this barrier
+            os.system(f"gdown --id {file_id} -O data.zip")
+            if os.path.exists(destination) and zipfile.is_zipfile(destination):
+                with zipfile.ZipFile(destination, "r") as zip_ref:
+                    zip_ref.extractall(".")
                 os.remove(destination)
+                st.success("Database successfully recovered via backup pipeline!")
             
     except Exception as download_error:
         st.error(f"Download failed: {download_error}")
 else:
     st.sidebar.success("Database loaded successfully from local cache!")
+
 
 # ---------------------------------------------------------
 
