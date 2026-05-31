@@ -17,7 +17,8 @@ DB_FOLDER = os.path.join("data", "croma")
 
 if not os.path.exists(DB_FOLDER) or not os.listdir(DB_FOLDER):
     st.info("Database empty or missing. Starting download...")
-    file_id = "1NWwtteZY3_Q6Yoh0RQjqv1xufrQFaxPB"
+    file_id = "1NVwtteZY3_Q6Yoh0RQjqv1xufrQFaxPB"
+
     try:
         gdown.download(id=file_id, output="data.zip", quiet=False)
         if os.path.exists("data.zip"):
