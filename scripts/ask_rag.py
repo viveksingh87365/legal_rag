@@ -17,12 +17,7 @@ def ask_rag(query):
             n_results=5
         )
         raw_docs = results.get("documents", [[]])
-        
-        if raw_docs and isinstance(raw_docs, list) and len(raw_docs) > 0:
-            docs = raw_docs
-        else:
-            docs = []
-            
+        docs = raw_docs if (raw_docs and len(raw_docs) > 0) else []
     except Exception as db_error:
         return {
             "short_answer": "Database connection error.",
@@ -60,57 +55,41 @@ def ask_rag(query):
     3. Break down the key reasoning into short, accurate, point-wise bullets.
     """
     
-    answer_text = None
-    errors_log = []
-    
     try:
+        # Pull your fresh AQ. key and completely clear out any hidden spacing characters
         api_key_val = str(st.secrets["GEMINI_API_KEY"]).strip()
-        payload = {"contents": [{"parts": [{"text": prompt}]}]}
         
-        # Define all candidate endpoints and their specific header layout variations
-        configs = [
-            # Pipeline 1: Native x-goog-api-key header (Recommended for AQ token formats)
-            {
-                "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
-                "headers": {"Content-Type": "application/json", "x-goog-api-key": api_key_val},
-                "params": {}
-            },
-            # Pipeline 2: Bearer Authorization Header (Standard for OAuth tokens)
-            {
-                "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
-                "headers": {"Content-Type": "application/json", "Authorization": f"Bearer {api_key_val}"},
-                "params": {}
-            },
-            # Pipeline 3: Standard parameter query routing fallback
-            {
-                "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
-                "headers": {"Content-Type": "application/json"},
-                "params": {"key": api_key_val}
-            }
-        ]
+        # Clean production URL with no trailing question marks or parameter text blocks
+        url = "https://googleapis.com"
         
-        # Loop through each network layout configuration automatically until one hits successfully
-        for i, config in enumerate(configs, 1):
-            try:
-                res = requests.post(config["url"], headers=config["headers"], json=payload, params=config["params"])
-                if res.status_code == 200:
-                    res_json = res.json()
-                    if "candidates" in res_json and res_json["candidates"]:
-                        answer_text = res_json["candidates"][0]["content"]["parts"][0]["text"]
-                        break
-                else:
-                    errors_log.append(f"Pipeline {i} (Status {res.status_code}): {res.text[:100]}")
-            except Exception as e:
-                errors_log.append(f"Pipeline {i} Exception: {str(e)}")
-                
-        if not answer_text:
-            answer_text = f"All API routing channels exhausted. Debug Details:\n" + "\n".join(errors_log)
+        # Pass the AQ. key EXCLUSIVELY inside the modern header signature block
+        headers = {
+            "Content-Type": "application/json",
+            "x-goog-api-key": api_key_val
+        }
+        
+        payload = {
+            "contents": [{
+                "parts": [{"text": prompt}]
+            }]
+        }
+        
+        response = requests.post(url, headers=headers, json=payload)
+        
+        if response.status_code == 200:
+            response_json = response.json()
+            if "candidates" in response_json and response_json["candidates"]:
+                answer_text = response_json["candidates"][0]["content"]["parts"][0]["text"]
+            else:
+                answer_text = f"API success code 200, but unexpected response structure: {str(response_json)[:150]}"
+        else:
+            answer_text = f"Authentication Error Code {response.status_code}. Server Response: {response.text[:150]}"
             
-    except Exception as master_error:
-        answer_text = f"Master gateway execution error: {str(master_error)}"
+    except Exception as e:
+        answer_text = f"API communication channel error: {str(e)}"
 
     return {
         "short_answer": answer_text,
         "reasoning": context,
-        "key_points": "Multi-channel adaptive router active"
+        "key_points": "Authenticated via Dedicated AQ Key Pipeline"
     }
