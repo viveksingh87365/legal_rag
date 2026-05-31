@@ -1,5 +1,6 @@
-# --- ADVANCED LARGE FILE DOWNLOAD WITH COOKIE HANDLING ---
+# --- AUTOMATED GOOGLE DRIVE LARGE FILE BYPASS ---
 import os
+import re
 import zipfile
 import requests
 import streamlit as st
@@ -7,7 +8,7 @@ import streamlit as st
 DB_FOLDER = os.path.join("data", "croma")
 
 if not os.path.exists(DB_FOLDER) or not os.listdir(DB_FOLDER):
-    st.info("Database files missing. Downloading 403MB archive from Google Drive...")
+    st.info("Database files missing. Bypassing Google virus warning page...")
     destination = "data.zip"
     file_id = "1NVwtteZY3_Q6Yoh0RQjqv1xufrQFaxPB"
     
@@ -15,36 +16,41 @@ if not os.path.exists(DB_FOLDER) or not os.listdir(DB_FOLDER):
         session = requests.Session()
         URL = "https://google.com"
         
-        # Step 1: Send a request to look for Google's large file warning cookie
+        # Step 1: Fetch the initial block page
         response = session.get(URL, params={'id': file_id}, stream=True)
         
-        token = None
-        for key, value in response.cookies.items():
-            if 'download_warning' in key:
-                token = value
-                break
-                
-        # Step 2: If the warning token exists, pass it back to confirm the download
-        if token:
-            response = session.get(URL, params={'id': file_id, 'confirm': token}, stream=True)
-            
-        # Step 3: Save the streaming data locally
+        # Step 2: Look for the confirmation token inside the HTML text content
+        html_content = response.text
+        match = re.search(r'confirm=([0-9A-Za-z_]+)', html_content)
+        
+        if match:
+            confirm_token = match.group(1)
+            # Step 3: Request the real file payload using the extracted token
+            response = session.get(URL, params={'id': file_id, 'confirm': confirm_token}, stream=True)
+        else:
+            # Try checking the cookies fallback if it wasn't in the HTML body
+            token_cookie = None
+            for key, value in response.cookies.items():
+                if 'download_warning' in key:
+                    token_cookie = value
+                    break
+            if token_cookie:
+                response = session.get(URL, params={'id': file_id, 'confirm': token_cookie}, stream=True)
+
+        # Step 4: Stream the actual zip file content down to the server
         with open(destination, "wb") as f:
             for chunk in response.iter_content(chunk_size=32768):
                 if chunk:
                     f.write(chunk)
                     
-        # Step 4: Verify if it's a real zip file before attempting extraction
+        # Step 5: Verify and unpack the database folder
         if zipfile.is_zipfile(destination):
             with zipfile.ZipFile(destination, "r") as zip_ref:
                 zip_ref.extractall(".")
             os.remove(destination)
             st.success("Database successfully downloaded and extracted!")
         else:
-            # Read the first few lines of the file to see the actual error message from Google
-            with open(destination, "r", errors="ignore") as f:
-                google_error = f.read(300)
-            st.error(f"Download failed. Google Drive blocked the file stream. Reason: {google_error[:150]}")
+            st.error("Google Drive security token could not be verified. Please refresh the page to retry.")
             if os.path.exists(destination):
                 os.remove(destination)
             
@@ -52,7 +58,6 @@ if not os.path.exists(DB_FOLDER) or not os.listdir(DB_FOLDER):
         st.error(f"Download failed: {download_error}")
 else:
     st.sidebar.success("Database loaded successfully from local cache!")
-
 
 # ---------------------------------------------------------
 
