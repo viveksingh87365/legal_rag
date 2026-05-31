@@ -8,7 +8,7 @@ DB_FOLDER = "data"
 
 # No if statement, no indents - this runs directly safely
 st.info("Downloading legal database...")
-file_id = "1NVwtteZY3_Q6Yoh0R0jqv1xufrQFaxPB"
+file_id ="1NVwtteZY3_Q6Yoh0RQjqv1xufrQFaxPB"
 
 # This uses gdown's official built-in ID handler directly
 gdown.download(id=file_id, output="data.zip", quiet=False)
