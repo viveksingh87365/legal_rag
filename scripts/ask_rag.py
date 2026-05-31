@@ -18,7 +18,7 @@ def ask_rag(query):
         )
         raw_docs = results.get("documents", [])
         if raw_docs and len(raw_docs) > 0:
-            docs = raw_docs[0]
+            docs = raw_docs
         else:
             docs = []
     except Exception as db_error:
@@ -35,7 +35,6 @@ def ask_rag(query):
             "key_points": ""
         }
     
-    # Safely convert all retrieved database items to clear strings
     clean_docs = [str(d) for d in docs]
     context = "\n\n".join(clean_docs)
     
@@ -52,30 +51,37 @@ CRITICAL STRUCTURAL RULES:
 3. Break down the key reasoning into short, accurate, point-wise bullets."""
     
     try:
-        # Extract secret token string cleanly and strip spaces
+        # Pull your fresh API key safely
         api_key_val = str(st.secrets["GEMINI_API_KEY"]).strip()
         
-        # Static URL without using f-string parameter insertion to guarantee zero string formatting errors
+        # Using Google's highly stable OpenAI-compatible router endpoint path
         url = "https://googleapis.com"
         
-        headers = {"Content-Type": "application/json"}
-        payload = {
-            "contents": [{
-                "parts": [{"text": prompt}]
-            }]
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {api_key_val}"
         }
         
-        # Passing the tracking key safely inside the query parameters dictionary
-        response = requests.post(url, headers=headers, json=payload, params={"key": api_key_val})
+        payload = {
+            "model": "gemini-1.5-flash",
+            "messages": [
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ]
+        }
+        
+        response = requests.post(url, headers=headers, json=payload)
         
         if response.status_code == 200:
             response_json = response.json()
-            if "candidates" in response_json and response_json["candidates"]:
-                answer_text = response_json["candidates"][0]["content"]["parts"][0]["text"]
+            if "choices" in response_json and len(response_json["choices"]) > 0:
+                answer_text = response_json["choices"][0]["message"]["content"]
             else:
-                answer_text = "API linked successfully, but text answer object is missing structure."
+                answer_text = "Successfully connected, but the returned data block structure was unreadable."
         else:
-            answer_text = f"Authentication Error ({response.status_code}): {response.text[:200]}"
+            answer_text = f"Server Route Error ({response.status_code}): {response.text[:200]}"
             
     except Exception as e:
         answer_text = f"API background network communication failure: {str(e)}"
@@ -83,5 +89,5 @@ CRITICAL STRUCTURAL RULES:
     return {
         "short_answer": answer_text,
         "reasoning": context,
-        "key_points": "Authenticated via Stable URL Parameter Mapping"
+        "key_points": "Authenticated via Global Compatibility Gateway Layer"
     }
