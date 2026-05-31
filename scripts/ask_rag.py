@@ -66,6 +66,7 @@ def ask_rag(query):
         # Exact regional production routing
         url = "https://googleapis.com"
 
+
         
         headers = {"Content-Type": "application/json"}
         payload = {
