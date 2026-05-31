@@ -2,7 +2,7 @@ import os
 import chromadb
 from google import genai
 
-DB_PATH = os.path.join(os.getcwd(), "data", "chroma")
+DB_PATH = os.path.join(os.getcwd(), "data", "croma")
 os.makedirs(DB_PATH, exist_ok=True)
 
 client = chromadb.PersistentClient(path=DB_PATH)
