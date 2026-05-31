@@ -1,9 +1,12 @@
 # --- RELIABLE LARGE FILE DOWNLOAD VIA REQUESTS ---
+# --- RELIABLE LARGE FILE DOWNLOAD VIA REQUESTS ---
 import os
 import zipfile
 import requests
+import streamlit as st  # <-- ADD THIS LINE HERE
 
 DB_FOLDER = os.path.join("data", "croma")
+
 
 if not os.path.exists(DB_FOLDER) or not os.listdir(DB_FOLDER):
     st.info("Database files missing. Downloading 403MB archive from Google Drive...")
