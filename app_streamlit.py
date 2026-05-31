@@ -1,12 +1,10 @@
-# --- RELIABLE LARGE FILE DOWNLOAD VIA REQUESTS ---
-# --- RELIABLE LARGE FILE DOWNLOAD VIA REQUESTS ---
+# --- FIXED DIRECT DOWNLOAD VIA REQUESTS ---
 import os
 import zipfile
 import requests
-import streamlit as st  # <-- ADD THIS LINE HERE
+import streamlit as st
 
 DB_FOLDER = os.path.join("data", "croma")
-
 
 if not os.path.exists(DB_FOLDER) or not os.listdir(DB_FOLDER):
     st.info("Database files missing. Downloading 403MB archive from Google Drive...")
@@ -14,44 +12,35 @@ if not os.path.exists(DB_FOLDER) or not os.listdir(DB_FOLDER):
     destination = "data.zip"
     
     try:
-        session = requests.Session()
-        URL = "https://google.com"
+        # Appending confirm=t directly tells Google Drive to skip the warning page and stream the raw zip file
+        URL = f"https://google.com{file_id}&confirm=t"
         
-        # First request to get confirmation token for large files
-        response = session.get(URL, params={'id': file_id}, stream=True)
-        token = None
-        for key, value in response.cookies.items():
-            if 'download_warning' in key:
-                token = value
-                break
-                
-        # Second request using the token if found
-        if token:
-            response = session.get(URL, params={'id': file_id, 'confirm': token}, stream=True)
-            
-        # Stream the download to a local file
+        response = requests.get(URL, stream=True)
+        
         with open(destination, "wb") as f:
             for chunk in response.iter_content(chunk_size=32768):
                 if chunk:
                     f.write(chunk)
                     
-        # Extract the downloaded zip archive
-        if os.path.exists(destination) and os.path.getsize(destination) > 0:
+        # Check if file size is substantial (not a tiny HTML text error snippet)
+        if os.path.exists(destination) and os.path.getsize(destination) > 5000:
             with zipfile.ZipFile(destination, "r") as zip_ref:
                 zip_ref.extractall(".")
             os.remove(destination)
             st.success("Database successfully downloaded and extracted!")
         else:
-            st.error("Downloaded file is empty. Please verify the Google Drive file ID.")
+            st.error("Downloaded file is invalid or empty. Please verify permissions.")
             
     except Exception as download_error:
         st.error(f"Download failed: {download_error}")
 else:
     st.sidebar.success("Database loaded successfully from local cache!")
+
     
-    if os.path.exists("data.zip"):
-        os.remove("data.zip")
-    st.success("Database ready!")
+   
+                    
+        # Extract the downloaded zip archive
+       
 
 
 
