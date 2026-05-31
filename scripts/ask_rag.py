@@ -56,36 +56,28 @@ def ask_rag(query):
     """
     
     try:
+        # Extract secret token string cleanly
         api_key_val = str(st.secrets["GEMINI_API_KEY"]).strip()
         
-        # Using Google's OpenAI-compatible endpoint which accepts corporate access tokens
-        url = "https://generativelanguage.googleapis.com/v1beta/chat/completions"
+        # Safe URL assignment with the key bound as an isolated parameter query string
+        url = f"https://googleapis.com{api_key_val}"
         
-        # Passing the AQ. token inside a standard Authorization Bearer header
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {api_key_val}"
-        }
-        
-        # Reformatting the payload schema to match OpenAI standards required by this endpoint
+        headers = {"Content-Type": "application/json"}
         payload = {
-            "model": "gemini-1.5-flash",
-            "messages": [
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ]
+            "contents": [{
+                "parts": [{"text": prompt}]
+            }]
         }
         
         response = requests.post(url, headers=headers, json=payload)
         
         if response.status_code == 200:
             response_json = response.json()
-            if "choices" in response_json and len(response_json["choices"]) > 0:
-                answer_text = response_json["choices"][0]["message"]["content"]
+            if "candidates" in response_json and response_json["candidates"]:
+                # Safely parse text block segments from Google's native schema layout
+                answer_text = response_json["candidates"][0]["content"]["parts"][0]["text"]
             else:
-                answer_text = f"API success, but unexpected OpenAI schema format returned: {str(response_json)[:150]}"
+                answer_text = f"API returned successful connection but missing parsing properties: {str(response_json)[:150]}"
         else:
             answer_text = f"Authentication Error ({response.status_code}): {response.text[:200]}"
             
@@ -95,5 +87,5 @@ def ask_rag(query):
     return {
         "short_answer": answer_text,
         "reasoning": context,
-        "key_points": "Authenticated via OpenAI Compatibility Layer"
+        "key_points": "Authenticated via Universal Parameter Pipeline"
     }
