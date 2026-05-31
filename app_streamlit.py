@@ -1,4 +1,4 @@
-# --- FIXED DIRECT DOWNLOAD VIA REQUESTS ---
+# --- ADVANCED LARGE FILE DOWNLOAD WITH COOKIE HANDLING ---
 import os
 import zipfile
 import requests
@@ -9,30 +9,50 @@ DB_FOLDER = os.path.join("data", "croma")
 if not os.path.exists(DB_FOLDER) or not os.listdir(DB_FOLDER):
     st.info("Database files missing. Downloading 403MB archive from Google Drive...")
     destination = "data.zip"
+    file_id = "1NVwtteZY3_Q6Yoh0RQjqv1xufrQFaxPB"
     
     try:
-        # Standard clean link format to prevent syntax address errors
+        session = requests.Session()
         URL = "https://google.com"
         
-        response = requests.get(URL, stream=True)
+        # Step 1: Send a request to look for Google's large file warning cookie
+        response = session.get(URL, params={'id': file_id}, stream=True)
         
+        token = None
+        for key, value in response.cookies.items():
+            if 'download_warning' in key:
+                token = value
+                break
+                
+        # Step 2: If the warning token exists, pass it back to confirm the download
+        if token:
+            response = session.get(URL, params={'id': file_id, 'confirm': token}, stream=True)
+            
+        # Step 3: Save the streaming data locally
         with open(destination, "wb") as f:
             for chunk in response.iter_content(chunk_size=32768):
                 if chunk:
                     f.write(chunk)
                     
-        if os.path.exists(destination) and os.path.getsize(destination) > 5000:
+        # Step 4: Verify if it's a real zip file before attempting extraction
+        if zipfile.is_zipfile(destination):
             with zipfile.ZipFile(destination, "r") as zip_ref:
                 zip_ref.extractall(".")
             os.remove(destination)
             st.success("Database successfully downloaded and extracted!")
         else:
-            st.error("Downloaded file is invalid or empty. Please verify permissions.")
+            # Read the first few lines of the file to see the actual error message from Google
+            with open(destination, "r", errors="ignore") as f:
+                google_error = f.read(300)
+            st.error(f"Download failed. Google Drive blocked the file stream. Reason: {google_error[:150]}")
+            if os.path.exists(destination):
+                os.remove(destination)
             
     except Exception as download_error:
         st.error(f"Download failed: {download_error}")
 else:
     st.sidebar.success("Database loaded successfully from local cache!")
+
 
 # ---------------------------------------------------------
 
