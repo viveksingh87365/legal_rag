@@ -6,18 +6,24 @@ import gdown
 # --- UPDATED DATABASE DOWNLOAD LOGIC (FOR STREAMLIT CLOUD) ---
 DB_FOLDER = "data"
 
-# No if statement, no indents - this runs directly safely
-st.info("Downloading legal database...")
-file_id ="1NVwtteZY3_Q6Yoh0RQjqv1xufrQFaxPB"
+# --- UPDATED DATABASE DOWNLOAD LOGIC (FOR STREAMLIT CLOUD) ---
+DB_FOLDER = "data"
 
-# This uses gdown's official built-in ID handler directly
-gdown.download(id=file_id, output="data.zip", quiet=False)
+if not os.path.exists(DB_FOLDER):
+    st.info("Downloading legal database...")
+    file_id = "1NWwtteZY3_Q6Yoh0RQjqv1xufrQFaxPB"
+    
+    # This uses gdown's official built-in ID handler directly
+    gdown.download(id=file_id, output="data.zip", quiet=False)
+    
+    zip_ref = zipfile.ZipFile("data.zip", "r")
+    zip_ref.extractall(".")
+    zip_ref.close()
+    
+    if os.path.exists("data.zip"):
+        os.remove("data.zip")
+    st.success("Database ready!")
 
-zip_ref = zipfile.ZipFile("data.zip", "r")
-zip_ref.extractall(".")
-zip_ref.close()
-os.remove("data.zip")
-st.success("Database ready!")
 
 
 # ---------------------------------------------------------
