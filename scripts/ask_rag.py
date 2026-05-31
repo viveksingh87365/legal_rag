@@ -60,39 +60,57 @@ def ask_rag(query):
     3. Break down the key reasoning into short, accurate, point-wise bullets.
     """
     
+    answer_text = None
+    errors_log = []
+    
     try:
         api_key_val = str(st.secrets["GEMINI_API_KEY"]).strip()
+        payload = {"contents": [{"parts": [{"text": prompt}]}]}
         
-        # Exact regional production routing
-        url = "https://googleapis.com"
-
-
+        # Define all candidate endpoints and their specific header layout variations
+        configs = [
+            # Pipeline 1: Native x-goog-api-key header (Recommended for AQ token formats)
+            {
+                "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
+                "headers": {"Content-Type": "application/json", "x-goog-api-key": api_key_val},
+                "params": {}
+            },
+            # Pipeline 2: Bearer Authorization Header (Standard for OAuth tokens)
+            {
+                "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
+                "headers": {"Content-Type": "application/json", "Authorization": f"Bearer {api_key_val}"},
+                "params": {}
+            },
+            # Pipeline 3: Standard parameter query routing fallback
+            {
+                "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
+                "headers": {"Content-Type": "application/json"},
+                "params": {"key": api_key_val}
+            }
+        ]
         
-        headers = {"Content-Type": "application/json"}
-        payload = {
-            "contents": [{
-                "parts": [{"text": prompt}]
-            }]
-        }
-        
-        response = requests.post(url, headers=headers, json=payload, params={"key": api_key_val})
-        
-        # Safe diagnostic checking to read what the text says without throwing JSON failures
-        if response.status_code == 200:
+        # Loop through each network layout configuration automatically until one hits successfully
+        for i, config in enumerate(configs, 1):
             try:
-                response_json = response.json()
-                answer_text = response_json["candidates"][0]["content"]["parts"][0]["text"]
-
-            except Exception:
-                answer_text = f"Status 200 OK, but JSON parsing layout shifted: {response.text[:250]}"
-        else:
-            answer_text = f"Server Error Code {response.status_code}. Server Response Message: {response.text[:250]}"
+                res = requests.post(config["url"], headers=config["headers"], json=payload, params=config["params"])
+                if res.status_code == 200:
+                    res_json = res.json()
+                    if "candidates" in res_json and res_json["candidates"]:
+                        answer_text = res_json["candidates"][0]["content"]["parts"][0]["text"]
+                        break
+                else:
+                    errors_log.append(f"Pipeline {i} (Status {res.status_code}): {res.text[:100]}")
+            except Exception as e:
+                errors_log.append(f"Pipeline {i} Exception: {str(e)}")
+                
+        if not answer_text:
+            answer_text = f"All API routing channels exhausted. Debug Details:\n" + "\n".join(errors_log)
             
-    except Exception as e:
-        answer_text = f"API exception processing error: {str(e)}"
+    except Exception as master_error:
+        answer_text = f"Master gateway execution error: {str(master_error)}"
 
     return {
         "short_answer": answer_text,
         "reasoning": context,
-        "key_points": "Diagnostic checking active"
+        "key_points": "Multi-channel adaptive router active"
     }
