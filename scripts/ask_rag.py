@@ -17,7 +17,8 @@ def ask_rag(query):
             n_results=5
         )
         raw_docs = results.get("documents", [[]])
-        docs = raw_docs if raw_docs else []
+        docs = raw_docs[0] if (raw_docs and len(raw_docs) > 0) else []
+
     except Exception as db_error:
         return {
             "short_answer": "Database connection error.",
