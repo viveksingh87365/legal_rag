@@ -46,7 +46,8 @@ if not os.path.exists(DB_FOLDER) or not os.listdir(DB_FOLDER):
         else:
             st.error("Downloaded file structure is invalid. Retrying via safe CLI method...")
             # Fallback to system-level command line tool which bypasses this barrier
-            os.system(f"gdown --id {file_id} -O data.zip")
+            os.system(f"gdown {file_id} -O data.zip")
+
             if os.path.exists(destination) and zipfile.is_zipfile(destination):
                 with zipfile.ZipFile(destination, "r") as zip_ref:
                     zip_ref.extractall(".")
