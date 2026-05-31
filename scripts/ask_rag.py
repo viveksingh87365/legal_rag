@@ -17,7 +17,7 @@ def ask_rag(query):
             n_results=5
         )
         raw_docs = results.get("documents", [[]])
-        docs = raw_docs[0] if (raw_docs and len(raw_docs) > 0) else []
+        docs = raw_docs if (raw_docs and len(raw_docs) > 0) else []
     except Exception as db_error:
         return {
             "short_answer": "Database connection error.",
@@ -32,7 +32,12 @@ def ask_rag(query):
             "key_points": ""
         }
     
-    context = "\n\n".join(docs)
+    # Safely clean and combine the document strings
+    clean_docs = [str(d) for d in docs if isinstance(d, str)]
+    if not clean_docs and docs and isinstance(docs, list) and isinstance(docs[0], list):
+        clean_docs = [str(d) for d in docs[0] if isinstance(d, str)]
+        
+    context = "\n\n".join(clean_docs)
     
     prompt = f"""
     You are an expert legal assistant. Use the following context to answer the user's question accurately.
@@ -49,10 +54,12 @@ def ask_rag(query):
     """
     
     try:
-        api_key_val = st.secrets["GEMINI_API_KEY"]
+        # Get the secret API key and strip out any accidental whitespace characters
+        api_key_val = str(st.secrets["GEMINI_API_KEY"]).strip()
         
-        # Bypassing the buggy SDK and calling the direct URL endpoint
-        url = f"https://googleapis.com{api_key_val}"
+        # Clean, static web link format
+        url = "https://googleapis.com"
+        
         headers = {"Content-Type": "application/json"}
         payload = {
             "contents": [{
@@ -60,27 +67,21 @@ def ask_rag(query):
             }]
         }
         
-        response = requests.post(url, headers=headers, json=payload)
+        # Passing the key inside params prevents website address corruption bugs
+        response = requests.post(url, headers=headers, json=payload, params={"key": api_key_val})
         response_json = response.json()
         
-        # Parse the text answer safely from the direct API layout
-        if "candidates" in response_json:
-            answer_text = response_json["candidates"][0]["content"]["parts"][0]["text"]
-        elif "error" in response_json:
-            # Fallback configuration: If parameter auth complains, retry with standard Bearer token header
-            fallback_headers = {
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {api_key_val}"
-            }
-            fallback_url = "https://googleapis.com"
-            fallback_res = requests.post(fallback_url, headers=fallback_headers, json=payload)
-            fallback_json = fallback_res.json()
-            if "candidates" in fallback_json:
-                answer_text = fallback_json["candidates"][0]["content"]["parts"][0]["text"]
+        # Safely parse out the text response
+        if "candidates" in response_json and response_json["candidates"]:
+            candidate = response_json["candidates"][0]
+            if "content" in candidate and "parts" in candidate["content"]:
+                answer_text = candidate["content"]["parts"][0]["text"]
             else:
-                answer_text = f"API Error: {response_json['error']['message']}"
+                answer_text = "Could not parse response text format from Gemini."
+        elif "error" in response_json:
+            answer_text = f"API Error: {response_json['error']['message']}"
         else:
-            answer_text = "Could not parse response from Gemini."
+            answer_text = "Empty or unrecognized response schema from Gemini API."
             
     except Exception as e:
         answer_text = f"Error generating point-wise answer: {str(e)}"
@@ -88,5 +89,5 @@ def ask_rag(query):
     return {
         "short_answer": answer_text,
         "reasoning": context,
-        "key_points": "Formatted via Direct API Endpoint Call"
+        "key_points": "Formatted via Direct Safe Parameter API Call"
     }
