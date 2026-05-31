@@ -2,8 +2,13 @@ import os
 import chromadb
 from google import genai
 
-DB_PATH = os.path.join(os.getcwd(), "data", "croma")
-os.makedirs(DB_PATH, exist_ok=True)
+# Automatically try both "croma" and "chroma" to find where the data is stored
+if os.path.exists(os.path.join(os.getcwd(), "data", "croma")):
+    DB_PATH = os.path.join(os.getcwd(), "data", "croma")
+elif os.path.exists(os.path.join(os.getcwd(), "data", "chroma")):
+    DB_PATH = os.path.join(os.getcwd(), "data", "chroma")
+else:
+    DB_PATH = os.path.join(os.getcwd(), "data")
 
 client = chromadb.PersistentClient(path=DB_PATH)
 collection = client.get_or_create_collection(name="legal_docs")
@@ -14,19 +19,23 @@ def ask_rag(query):
         n_results=5
     )
     
-    docs = results.get("documents", [[]])[0]
+    # Get the raw list of documents
+    raw_docs = results.get("documents", [])
     
-    if not docs:
+    # Extract the first inner list safely
+    docs = raw_docs[0] if raw_docs else []
+    
+    if not docs or len(docs) == 0:
         return {
             "short_answer": "No answer found.",
-            "reasoning": "DB not loaded in Streamlit Cloud.",
+            "reasoning": f"Database folder located at {DB_PATH} but no matching documents were retrieved.",
             "key_points": ""
         }
     
     # Combine the database document text into a single context block
     context = "\n\n".join(docs)
     
-    # Set up the Gemini client (it will automatically look for your secret API key)
+    # Set up the Gemini client
     ai_client = genai.Client()
     
     prompt = f"""
